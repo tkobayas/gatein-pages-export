@@ -1,7 +1,5 @@
 package com.example;
 
-import java.io.InputStream;
-import java.io.StringReader;
 import java.sql.Blob;
 import java.sql.Connection;
 import java.sql.DriverManager;
