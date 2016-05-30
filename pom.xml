@@ -51,6 +51,16 @@
 		</dependency>
 
 		<dependency>
+			<groupId>org.gatein.mop</groupId>
+			<artifactId>mop-api</artifactId>
+			<version>1.1.2-GA</version>
+			<scope>system</scope>
+			<systemPath>
+			${basedir}/lib/mop-api-1.1.2-GA.jar
+			</systemPath>
+		</dependency>
+		
+		<dependency>
 			<groupId>org.staxnav</groupId>
 			<artifactId>staxnav.core</artifactId>
 			<version>0.9.6</version>
