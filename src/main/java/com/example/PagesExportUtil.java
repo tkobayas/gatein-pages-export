@@ -60,19 +60,23 @@ public class PagesExportUtil {
                 System.out.println("-----------------------------");
 
                 String userId = getUser(user);
-                List<String> pageIdList = getPages(userId);
+                if(userId!=null) {
+                   List<String> pageIdList = getPages(userId);
 
-                List<Page> pageList = new ArrayList<Page>();
-                for (String pageId : pageIdList) {
-                    Page page = createPage(pageId);
-                    pageList.add(page);
-                }
+                   List<Page> pageList = new ArrayList<Page>();
+                   for (String pageId : pageIdList) {
+                       Page page = createPage(pageId);
+                       pageList.add(page);
+                   }
 
-                BufferedOutputStream outputStream = new BufferedOutputStream(new FileOutputStream("output/" + user + ".xml"));
+                   BufferedOutputStream outputStream = new BufferedOutputStream(new FileOutputStream("output/" + user + ".xml"));
 
-                exportPages(pageList, outputStream);
+                   exportPages(pageList, outputStream);
 
-                outputStream.close();
+                   outputStream.close();
+               } else {
+                  System.out.println("No user data found for user " + user);
+               }
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -415,6 +419,8 @@ public class PagesExportUtil {
             return (String) value;
         } else if (value instanceof Blob) {
             return new String(((Blob) value).getBytes(1, (int) ((Blob) value).length()), "UTF-8");
+        } else if (value instanceof byte[]) {
+            return new String((byte[])value);
         } else {
             throw new RuntimeException("Unexpected type : " + value.getClass());
         }
@@ -456,6 +462,8 @@ public class PagesExportUtil {
                 values[i] = (String) value;
             } else if (value instanceof Blob) {
                 values[i] = new String(((Blob) value).getBytes(1, (int) ((Blob) value).length()), "UTF-8");
+            } else if (value instanceof byte[]) {
+                values[i] = new String((byte[])value);
             } else {
                 throw new RuntimeException("Unexpected type : " + value.getClass());
             }
@@ -477,7 +485,11 @@ public class PagesExportUtil {
     private static String getUser(String user) throws Exception {
         String query = "select ID from JCR_SITEM where NAME = '[http://www.gatein.org/jcr/mop/1.0/]" + user + "'";
         List<String> idList = getSingleValueListBySQL(query);
-        return idList.get(0);
+        if(idList.size() > 0) {
+           return idList.get(0);
+        } else {
+           return null;
+        }
     }
 
     private static List<String> getSingleValueListBySQL(String query) throws Exception {
