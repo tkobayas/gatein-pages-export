@@ -1,16 +1,24 @@
 package com.example;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.sql.Blob;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Properties;
 
 import org.exoplatform.portal.config.model.ApplicationState;
 import org.exoplatform.portal.config.model.ApplicationType;
@@ -29,28 +37,56 @@ public class PagesExportUtil {
     public static Connection conn;
 
     public static void main(String[] args) throws Exception {
-        Class.forName("oracle.jdbc.driver.OracleDriver");
-        conn = DriverManager.getConnection("jdbc:oracle:thin:@localhost:49161:xe", "epp522jcr", "oracle");
 
-        String userId = getUser("john");
-        List<String> pageIdList = getPages(userId);
+        Properties properties = new Properties();
+        BufferedInputStream inputStream = new BufferedInputStream(new FileInputStream("gatein-pages-export.properties"));
+        properties.load(inputStream);
+        inputStream.close();
 
-        List<Page> pageList = new ArrayList<Page>();
-        for (String pageId : pageIdList) {
-            Page page = createPage(pageId);
-            pageList.add(page);
+        Class.forName(properties.getProperty("driverClass"));
+        conn = DriverManager.getConnection(properties.getProperty("connectionUrl"), properties.getProperty("username"),
+                properties.getProperty("password"));
+
+        BufferedReader reader = new BufferedReader(new FileReader("user-list.txt"));
+        while (reader.ready()) {
+
+            try {
+                String user = reader.readLine();
+                if (user == null || user.trim().isEmpty()) {
+                    continue;
+                }
+                System.out.println();
+                System.out.println("user = " + user);
+                System.out.println("-----------------------------");
+
+                String userId = getUser(user);
+                List<String> pageIdList = getPages(userId);
+
+                List<Page> pageList = new ArrayList<Page>();
+                for (String pageId : pageIdList) {
+                    Page page = createPage(pageId);
+                    pageList.add(page);
+                }
+
+                BufferedOutputStream outputStream = new BufferedOutputStream(new FileOutputStream("output/" + user + ".xml"));
+
+                exportPages(pageList, outputStream);
+
+                outputStream.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
 
-        exportPages(pageList);
-
+        reader.close();
     }
 
-    private static void exportPages(List<Page> pageList) {
+    private static void exportPages(List<Page> pageList, OutputStream outputStream) {
         Page.PageSet pages = new Page.PageSet();
         pages.setPages(new ArrayList<Page>(pageList));
 
         PageMarshaller marshaller = new PageMarshaller();
-        marshaller.marshal(pages, System.out);
+        marshaller.marshal(pages, outputStream);
     }
 
     private static Page createPage(String pageId) throws Exception {
@@ -88,8 +124,8 @@ public class PagesExportUtil {
     }
 
     private static ModelObject createChild(String childId) throws Exception {
-        System.out.println(childId);
-        
+        System.out.println("NODE : " + childId);
+
         boolean isContainer = false;
         String primaryType = getSinglePropertyByPropNameAndItemId("[http://www.jcp.org/jcr/1.0]primaryType", childId);
         if (primaryType.equals("[http://www.gatein.org/jcr/mop/1.0/]uicontainer")) {
@@ -104,18 +140,26 @@ public class PagesExportUtil {
     }
 
     private static ModelObject createContainer(String itemId) throws Exception {
+
+        System.out.println("createContainer() : itemId = " + itemId);
+
         Container container = new Container();
+
+        String name = getSinglePropertyByPropNameAndItemId("[http://www.gatein.org/jcr/gatein/1.0/]name", itemId);
+        if (name != null) {
+            container.setTitle(name);
+        }
 
         String[] accessPermissions = getMultiplePropertyByPropNameAndItemId("[http://www.gatein.org/jcr/gatein/1.0/]access-permissions",
                 itemId);
         container.setAccessPermissions(accessPermissions);
-        
+
         String template = getAttributeByAttrNameAndItemId("[http://www.gatein.org/jcr/mop/1.0/]template", itemId);
         container.setTemplate(template);
-        
+
         String factoryId = getAttributeByAttrNameAndItemId("[http://www.gatein.org/jcr/mop/1.0/]factory-id", itemId);
         container.setFactoryId(factoryId);
-        
+
         ArrayList<ModelObject> children = new ArrayList<ModelObject>();
         List<String> childIds = getChildComponents(itemId);
         for (String childId : childIds) {
@@ -123,34 +167,36 @@ public class PagesExportUtil {
             children.add(child);
         }
         container.setChildren(children);
-        
+
         return container;
     }
 
-    private static PortletApplication createPortletApplication(String childId) throws Exception {
+    private static PortletApplication createPortletApplication(String itemId) throws Exception {
+
+        System.out.println("createPortletApplication() : itemId = " + itemId);
 
         ApplicationData<Portlet> applicationData = new ApplicationData<Portlet>(null, null, ApplicationType.PORTLET, null, null, null,
-                null, null, false, false, false, null, null,null, new HashMap<String, String>(),
+                null, null, false, false, false, null, null, null, new HashMap<String, String>(),
                 Collections.singletonList("app-edit-permissions"));
         PortletApplication portletApplication = new PortletApplication(applicationData);
 
         //testQuery("select * from JCR_SITEM where PARENT_ID = '" + childId + "'");
         //testAttributes(childId);
-        
-        String name = getSinglePropertyByPropNameAndItemId("[http://www.gatein.org/jcr/gatein/1.0/]name", childId);
+
+        String name = getSinglePropertyByPropNameAndItemId("[http://www.gatein.org/jcr/gatein/1.0/]name", itemId);
         if (name != null) {
             portletApplication.setTitle(name);
         }
 
-        String description = getSinglePropertyByPropNameAndItemId("[http://www.gatein.org/jcr/gatein/1.0/]description", childId);
+        String description = getSinglePropertyByPropNameAndItemId("[http://www.gatein.org/jcr/gatein/1.0/]description", itemId);
         if (description != null) {
             portletApplication.setDescription(description);
         }
 
-        Portlet portlet = setupPortletPreferences(childId);
+        Portlet portlet = setupPortletPreferences(itemId);
 
-        String type = getAttributeByAttrNameAndItemId("[http://www.gatein.org/jcr/mop/1.0/]type", childId);
-        String contentId = getContentId(childId);
+        String type = getAttributeByAttrNameAndItemId("[http://www.gatein.org/jcr/mop/1.0/]type", itemId);
+        String contentId = getContentId(itemId);
         if (contentId != null) {
             ApplicationState<Portlet> newState = new TransientApplicationState<Portlet>(contentId, portlet);
             portletApplication.setState(newState);
@@ -162,34 +208,42 @@ public class PagesExportUtil {
         }
 
         String[] accessPermissions = getMultiplePropertyByPropNameAndItemId("[http://www.gatein.org/jcr/gatein/1.0/]access-permissions",
-                childId);
+                itemId);
         portletApplication.setAccessPermissions(accessPermissions);
 
-        String theme = getAttributeByAttrNameAndItemId("[http://www.gatein.org/jcr/mop/1.0/]theme", childId);
+        String theme = getAttributeByAttrNameAndItemId("[http://www.gatein.org/jcr/mop/1.0/]theme", itemId);
         portletApplication.setTheme(theme);
 
-        String showInfoBar = getAttributeByAttrNameAndItemId("[http://www.gatein.org/jcr/mop/1.0/]showinfobar", childId);
+        String showInfoBar = getAttributeByAttrNameAndItemId("[http://www.gatein.org/jcr/mop/1.0/]showinfobar", itemId);
         portletApplication.setShowInfoBar(Boolean.valueOf(showInfoBar));
 
-        String showMode = getAttributeByAttrNameAndItemId("[http://www.gatein.org/jcr/mop/1.0/]showmode", childId);
+        String showMode = getAttributeByAttrNameAndItemId("[http://www.gatein.org/jcr/mop/1.0/]showmode", itemId);
         portletApplication.setShowApplicationMode(Boolean.valueOf(showMode));
 
-        String showWindowState = getAttributeByAttrNameAndItemId("[http://www.gatein.org/jcr/mop/1.0/]showwindowstate", childId);
+        String showWindowState = getAttributeByAttrNameAndItemId("[http://www.gatein.org/jcr/mop/1.0/]showwindowstate", itemId);
         portletApplication.setShowApplicationState(Boolean.valueOf(showWindowState));
 
-        String width = getAttributeByAttrNameAndItemId("[http://www.gatein.org/jcr/mop/1.0/]width", childId);
+        String width = getAttributeByAttrNameAndItemId("[http://www.gatein.org/jcr/mop/1.0/]width", itemId);
         portletApplication.setWidth(width);
 
-        String height = getAttributeByAttrNameAndItemId("[http://www.gatein.org/jcr/mop/1.0/]height", childId);
+        String height = getAttributeByAttrNameAndItemId("[http://www.gatein.org/jcr/mop/1.0/]height", itemId);
         portletApplication.setHeight(height);
 
         return portletApplication;
     }
-    
-    private static Portlet setupPortletPreferences(String childId) throws Exception {
+
+    private static Portlet setupPortletPreferences(String itemId) throws Exception {
+
+        System.out.println("setupPortletPreferences() : itemId = " + itemId);
+
         Portlet portlet = new Portlet();
 
-        String customizationId = getItemIdByNameAndParentId("[http://www.gatein.org/jcr/mop/1.0/]customization", childId);
+        String customizationId = getItemIdByNameAndParentId("[http://www.gatein.org/jcr/mop/1.0/]customization", itemId);
+
+        if (customizationId == null) {
+            return portlet;
+        }
+
         String stateId = getItemIdByNameAndParentId("[http://www.gatein.org/jcr/mop/1.0/]state", customizationId);
 
         if (stateId == null) {
@@ -209,8 +263,14 @@ public class PagesExportUtil {
         return portlet;
     }
 
-    private static String getContentId(String childId) throws Exception {
-        String customizationId = getItemIdByNameAndParentId("[http://www.gatein.org/jcr/mop/1.0/]customization", childId);
+    private static String getContentId(String itemId) throws Exception {
+        System.out.println("getContentId() : itemId = " + itemId);
+
+        String customizationId = getItemIdByNameAndParentId("[http://www.gatein.org/jcr/mop/1.0/]customization", itemId);
+
+        if (customizationId == null) {
+            return null;
+        }
 
         String contentId = getSinglePropertyByPropNameAndItemId("[http://www.gatein.org/jcr/mop/1.0/]contentid", customizationId);
 
@@ -222,32 +282,6 @@ public class PagesExportUtil {
         return contentId;
     }
 
-    private static void testAttributes(String itemId) throws Exception {
-        String attributesId = getItemIdByNameAndParentId("[http://www.gatein.org/jcr/mop/1.0/]attributes", itemId);
-
-        Statement stmt = null;
-        ResultSet rs = null;
-
-        try {
-            stmt = conn.createStatement();
-            rs = stmt.executeQuery("select ID, NAME from JCR_SITEM where PARENT_ID = '" + attributesId
-                    + "' and NAME like '[http://www.gatein.org/jcr/mop/1.0/]%'");
-            while (rs.next()) {
-                String attrId = (String) rs.getObject(1);
-                String name = (String) rs.getObject(2);
-
-                String attrValuePropId = getItemIdByNameAndParentId("[http://www.gatein.org/jcr/mop/1.0/]value", attrId);
-                String attrValue = getSingleValueBySQL("select DATA from JCR_SVALUE where PROPERTY_ID = '" + attrValuePropId + "'");
-
-                System.out.println("  " + name + " : " + attrValue);
-            }
-
-        } finally {
-            rs.close();
-            stmt.close();
-        }
-    }
-
     private static List<String> getChildComponents(String rootcomponent) throws Exception {
         String query = "select * from JCR_SITEM" + " where PARENT_ID = '" + rootcomponent
                 + "' and NAME like '[http://www.gatein.org/jcr/mop/1.0/]%' and NAME != '[http://www.gatein.org/jcr/mop/1.0/]attributes'";
@@ -257,6 +291,16 @@ public class PagesExportUtil {
     }
 
     private static String getItemIdByNameAndParentId(String itemName, String parentId) throws Exception {
+
+        if (parentId == null) {
+            System.out.println("  getItemIdByNameAndParentId() : parentId = null");
+            return null;
+        }
+
+        String query = "select ID, NAME from JCR_SITEM where PARENT_ID = '" + parentId + "'";
+
+        System.out.println("  " + query);
+
         String itemId = null;
 
         Statement stmt = null;
@@ -264,7 +308,7 @@ public class PagesExportUtil {
 
         try {
             stmt = conn.createStatement();
-            rs = stmt.executeQuery("select ID, NAME from JCR_SITEM where PARENT_ID = '" + parentId + "'");
+            rs = stmt.executeQuery(query);
             boolean found = false;
             while (rs.next()) {
                 String name = (String) rs.getObject(2);
@@ -277,7 +321,7 @@ public class PagesExportUtil {
 
             if (!found) {
                 //                throw new RuntimeException(itemName + " not found for PARENT_ID = " + parentId);
-                System.out.println(itemName + " not found for PARENT_ID = " + parentId);
+                System.out.println("  " + itemName + " not found for PARENT_ID = " + parentId);
                 return null;
             }
 
@@ -290,13 +334,19 @@ public class PagesExportUtil {
 
     }
 
-    private static String getAttributeByAttrNameAndItemId(String attrName, String pageId) throws Exception {
+    private static String getAttributeByAttrNameAndItemId(String attrName, String itemId) throws Exception {
+
+        System.out.println("getAttributeByAttrNameAndItemId() : attrName = " + attrName + ", itemId = " + itemId);
 
         // Step 1 : get the attributes node of the page
-        String attributesId = getItemIdByNameAndParentId("[http://www.gatein.org/jcr/mop/1.0/]attributes", pageId);
+        String attributesId = getItemIdByNameAndParentId("[http://www.gatein.org/jcr/mop/1.0/]attributes", itemId);
 
         // Step 2 : get the attribute node of the name
         String attrId = getItemIdByNameAndParentId(attrName, attributesId);
+
+        if (attrId == null) {
+            return null;
+        }
 
         // Step 3 : get the value node of the attribute
         String attrValuePropId = getItemIdByNameAndParentId("[http://www.gatein.org/jcr/mop/1.0/]value", attrId);
@@ -309,8 +359,14 @@ public class PagesExportUtil {
 
     private static String getSinglePropertyByPropNameAndItemId(String propName, String itemId) throws Exception {
 
+        System.out.println("getSinglePropertyByPropNameAndItemId() : propName = " + propName + ", itemId = " + itemId);
+
         // Step 1 : get the prop node of the name
         String propId = getItemIdByNameAndParentId(propName, itemId);
+
+        if (propId == null) {
+            return null;
+        }
 
         // Step 2 : get the value from JCR_SVALUE
         String propValue = getSingleValueBySQL("select DATA from JCR_SVALUE where PROPERTY_ID = '" + propId + "'");
@@ -319,6 +375,8 @@ public class PagesExportUtil {
     }
 
     private static String[] getMultiplePropertyByPropNameAndItemId(String propName, String itemId) throws Exception {
+
+        System.out.println("getMultiplePropertyByPropNameAndItemId() : propName = " + propName + ", itemId = " + itemId);
 
         // Step 1 : get the prop node of the name
         String propId = getItemIdByNameAndParentId(propName, itemId);
@@ -330,6 +388,9 @@ public class PagesExportUtil {
     }
 
     private static String getSingleValueBySQL(String query) throws Exception {
+
+        System.out.println("  " + query);
+
         Statement stmt = null;
         ResultSet rs = null;
         Object value = null;
@@ -360,6 +421,9 @@ public class PagesExportUtil {
     }
 
     private static String[] getMultipleValueBySQL(String query) throws Exception {
+
+        System.out.println("  " + query);
+
         Statement stmt = null;
         ResultSet rs = null;
         List<Object> valueList = new ArrayList<Object>();
@@ -418,7 +482,7 @@ public class PagesExportUtil {
 
     private static List<String> getSingleValueListBySQL(String query) throws Exception {
 
-        System.out.println(query);
+        System.out.println("  " + query);
 
         List<String> idList = new ArrayList<String>();
 
@@ -456,5 +520,31 @@ public class PagesExportUtil {
         stmt.close();
 
         return;
+    }
+
+    private static void testAttributes(String itemId) throws Exception {
+        String attributesId = getItemIdByNameAndParentId("[http://www.gatein.org/jcr/mop/1.0/]attributes", itemId);
+
+        Statement stmt = null;
+        ResultSet rs = null;
+
+        try {
+            stmt = conn.createStatement();
+            rs = stmt.executeQuery("select ID, NAME from JCR_SITEM where PARENT_ID = '" + attributesId
+                    + "' and NAME like '[http://www.gatein.org/jcr/mop/1.0/]%'");
+            while (rs.next()) {
+                String attrId = (String) rs.getObject(1);
+                String name = (String) rs.getObject(2);
+
+                String attrValuePropId = getItemIdByNameAndParentId("[http://www.gatein.org/jcr/mop/1.0/]value", attrId);
+                String attrValue = getSingleValueBySQL("select DATA from JCR_SVALUE where PROPERTY_ID = '" + attrValuePropId + "'");
+
+                System.out.println("  " + name + " : " + attrValue);
+            }
+
+        } finally {
+            rs.close();
+            stmt.close();
+        }
     }
 }

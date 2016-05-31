@@ -28,7 +28,7 @@ import org.exoplatform.portal.pom.spi.portlet.Preference;
 public class QuickSQL {
 
     public static Connection conn;
-    
+
     public static int level = 0;
 
     public static void main(String[] args) throws Exception {
@@ -49,19 +49,19 @@ public class QuickSQL {
             log(trimNS(name));
         }
         level++;
-        
+
         List<String> propIdList = getSingleValueListBySQL("select ID from JCR_SITEM where PARENT_ID = '" + id + "' and I_CLASS = '2'");
         for (String propId : propIdList) {
             String propName = getSingleValueBySQL("select NAME from JCR_SITEM where ID = '" + propId + "'");
             String propValue = getSingleValueBySQL("select DATA from JCR_SVALUE where PROPERTY_ID = '" + propId + "'");
             log(trimNS(propName) + " : " + propValue);
         }
-        
+
         List<String> itemIdList = getSingleValueListBySQL("select ID from JCR_SITEM where PARENT_ID = '" + id + "' and I_CLASS = '1'");
         for (String itemId : itemIdList) {
             treeView(itemId);
         }
-        
+
         level--;
     }
 
@@ -78,8 +78,7 @@ public class QuickSQL {
     }
 
     private static String trimNS(String name) {
-        return name.replace("[http://www.gatein.org/jcr/mop/1.0/]", "")
-                .replace("[http://www.jcp.org/jcr/1.0]", "")
+        return name.replace("[http://www.gatein.org/jcr/mop/1.0/]", "").replace("[http://www.jcp.org/jcr/1.0]", "")
                 .replace("[http://www.gatein.org/jcr/gatein/1.0/]", "");
     }
 
@@ -255,7 +254,7 @@ public class QuickSQL {
 
     private static List<String> getSingleValueListBySQL(String query) throws Exception {
 
-//        System.out.println(query);
+        //        System.out.println(query);
 
         List<String> idList = new ArrayList<String>();
 
