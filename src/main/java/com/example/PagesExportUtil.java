@@ -14,6 +14,7 @@ import java.util.Map;
 
 import org.exoplatform.portal.config.model.ApplicationState;
 import org.exoplatform.portal.config.model.ApplicationType;
+import org.exoplatform.portal.config.model.Container;
 import org.exoplatform.portal.config.model.ModelObject;
 import org.exoplatform.portal.config.model.Page;
 import org.exoplatform.portal.config.model.TransientApplicationState;
@@ -23,7 +24,7 @@ import org.exoplatform.portal.pom.data.ApplicationData;
 import org.exoplatform.portal.pom.spi.portlet.Portlet;
 import org.exoplatform.portal.pom.spi.portlet.Preference;
 
-public class PagesQueryUtil {
+public class PagesExportUtil {
 
     public static Connection conn;
 
@@ -88,21 +89,54 @@ public class PagesQueryUtil {
 
     private static ModelObject createChild(String childId) throws Exception {
         System.out.println(childId);
+        
+        boolean isContainer = false;
+        String primaryType = getSinglePropertyByPropNameAndItemId("[http://www.jcp.org/jcr/1.0]primaryType", childId);
+        if (primaryType.equals("[http://www.gatein.org/jcr/mop/1.0/]uicontainer")) {
+            isContainer = true;
+        }
+        String type = getAttributeByAttrNameAndItemId("[http://www.gatein.org/jcr/mop/1.0/]type", childId);
+        if (isContainer && type == null) {
+            return createContainer(childId);
+        } else {
+            return createPortletApplication(childId);
+        }
+    }
 
-        //        Portlet portlet = new Portlet();
-        //        portlet.putPreference(new Preference("pref-1", "value-1", true));
-        //        portlet.putPreference(new Preference("pref-2", "value-2", false));
-        //        portlet.putPreference(new Preference("multi-value-pref", Arrays.asList("one", "two", "three"), false));
-        //        portlet.putPreference(new Preference("empty-value-pref", (String) null, true));
-        //        ApplicationState<Portlet> state = new TransientApplicationState<Portlet>("app-ref/portlet-ref");
+    private static ModelObject createContainer(String itemId) throws Exception {
+        Container container = new Container();
+
+        String[] accessPermissions = getMultiplePropertyByPropNameAndItemId("[http://www.gatein.org/jcr/gatein/1.0/]access-permissions",
+                itemId);
+        container.setAccessPermissions(accessPermissions);
+        
+        String template = getAttributeByAttrNameAndItemId("[http://www.gatein.org/jcr/mop/1.0/]template", itemId);
+        container.setTemplate(template);
+        
+        String factoryId = getAttributeByAttrNameAndItemId("[http://www.gatein.org/jcr/mop/1.0/]factory-id", itemId);
+        container.setFactoryId(factoryId);
+        
+        ArrayList<ModelObject> children = new ArrayList<ModelObject>();
+        List<String> childIds = getChildComponents(itemId);
+        for (String childId : childIds) {
+            ModelObject child = createChild(childId);
+            children.add(child);
+        }
+        container.setChildren(children);
+        
+        return container;
+    }
+
+    private static PortletApplication createPortletApplication(String childId) throws Exception {
+
         ApplicationData<Portlet> applicationData = new ApplicationData<Portlet>(null, null, ApplicationType.PORTLET, null, null, null,
-                null, null, false, false, false, null, "app-width", "app-height", new HashMap<String, String>(),
+                null, null, false, false, false, null, null,null, new HashMap<String, String>(),
                 Collections.singletonList("app-edit-permissions"));
         PortletApplication portletApplication = new PortletApplication(applicationData);
 
         //testQuery("select * from JCR_SITEM where PARENT_ID = '" + childId + "'");
-        testAttributes(childId);
-
+        //testAttributes(childId);
+        
         String name = getSinglePropertyByPropNameAndItemId("[http://www.gatein.org/jcr/gatein/1.0/]name", childId);
         if (name != null) {
             portletApplication.setTitle(name);
@@ -151,7 +185,7 @@ public class PagesQueryUtil {
 
         return portletApplication;
     }
-
+    
     private static Portlet setupPortletPreferences(String childId) throws Exception {
         Portlet portlet = new Portlet();
 
