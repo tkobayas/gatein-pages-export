@@ -6,9 +6,7 @@ import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.sql.Blob;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -58,6 +56,8 @@ public class PagesExportUtil {
                 System.out.println();
                 System.out.println("user = " + user);
                 System.out.println("-----------------------------");
+
+                // System.out.println("used memory = " + ((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / (1024 * 1024)) + " MB");
 
                 String userId = getUser(user);
                 if (userId != null) {
