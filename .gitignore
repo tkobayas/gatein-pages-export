@@ -9,3 +9,5 @@ transaction.log
 *customer*
 bin/
 dist/output.log
+dist/output/*.xml
+
