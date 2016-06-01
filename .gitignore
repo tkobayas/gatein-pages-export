@@ -10,4 +10,5 @@ transaction.log
 bin/
 dist/output.log
 dist/output/*.xml
-
+output/*.xml
+gatein-pages-export-*-dist.zip

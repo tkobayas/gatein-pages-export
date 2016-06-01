@@ -60,23 +60,23 @@ public class PagesExportUtil {
                 System.out.println("-----------------------------");
 
                 String userId = getUser(user);
-                if(userId!=null) {
-                   List<String> pageIdList = getPages(userId);
+                if (userId != null) {
+                    List<String> pageIdList = getPages(userId);
 
-                   List<Page> pageList = new ArrayList<Page>();
-                   for (String pageId : pageIdList) {
-                       Page page = createPage(pageId);
-                       pageList.add(page);
-                   }
+                    List<Page> pageList = new ArrayList<Page>();
+                    for (String pageId : pageIdList) {
+                        Page page = createPage(pageId);
+                        pageList.add(page);
+                    }
 
-                   BufferedOutputStream outputStream = new BufferedOutputStream(new FileOutputStream("output/" + user + ".xml"));
+                    BufferedOutputStream outputStream = new BufferedOutputStream(new FileOutputStream("output/" + user + ".xml"));
 
-                   exportPages(pageList, outputStream);
+                    exportPages(pageList, outputStream);
 
-                   outputStream.close();
-               } else {
-                  System.out.println("No user data found for user " + user);
-               }
+                    outputStream.close();
+                } else {
+                    System.out.println("No user data found for user " + user);
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -287,8 +287,10 @@ public class PagesExportUtil {
     }
 
     private static List<String> getChildComponents(String rootcomponent) throws Exception {
-        String query = "select * from JCR_SITEM" + " where PARENT_ID = '" + rootcomponent
-                + "' and NAME like '[http://www.gatein.org/jcr/mop/1.0/]%' and NAME != '[http://www.gatein.org/jcr/mop/1.0/]attributes'";
+        String query = "select * from JCR_SITEM"
+                + " where PARENT_ID = '"
+                + rootcomponent
+                + "' and NAME like '[http://www.gatein.org/jcr/mop/1.0/]%' and NAME != '[http://www.gatein.org/jcr/mop/1.0/]attributes' order by N_ORDER_NUM";
 
         List<String> idList = getSingleValueListBySQL(query);
         return idList;
@@ -420,7 +422,7 @@ public class PagesExportUtil {
         } else if (value instanceof Blob) {
             return new String(((Blob) value).getBytes(1, (int) ((Blob) value).length()), "UTF-8");
         } else if (value instanceof byte[]) {
-            return new String((byte[])value);
+            return new String((byte[]) value);
         } else {
             throw new RuntimeException("Unexpected type : " + value.getClass());
         }
@@ -463,7 +465,7 @@ public class PagesExportUtil {
             } else if (value instanceof Blob) {
                 values[i] = new String(((Blob) value).getBytes(1, (int) ((Blob) value).length()), "UTF-8");
             } else if (value instanceof byte[]) {
-                values[i] = new String((byte[])value);
+                values[i] = new String((byte[]) value);
             } else {
                 throw new RuntimeException("Unexpected type : " + value.getClass());
             }
@@ -476,7 +478,7 @@ public class PagesExportUtil {
         String query = "select ID from JCR_SITEM where PARENT_ID in (select ID from JCR_SITEM where PARENT_ID in (select ID from JCR_SITEM where PARENT_ID in (select ID from JCR_SITEM where PARENT_ID in"
                 + " (select ID from JCR_SITEM where PARENT_ID = '"
                 + userId
-                + "' and NAME like '%rootpage') and NAME like '%children') and NAME like '%pages') and NAME like '%children') and NAME like '[http://www.gatein.org/jcr/mop/1.0/]%'";
+                + "' and NAME like '%rootpage') and NAME like '%children') and NAME like '%pages') and NAME like '%children') and NAME like '[http://www.gatein.org/jcr/mop/1.0/]%' order by N_ORDER_NUM";
 
         List<String> idList = getSingleValueListBySQL(query);
         return idList;
@@ -485,10 +487,10 @@ public class PagesExportUtil {
     private static String getUser(String user) throws Exception {
         String query = "select ID from JCR_SITEM where NAME = '[http://www.gatein.org/jcr/mop/1.0/]" + user + "'";
         List<String> idList = getSingleValueListBySQL(query);
-        if(idList.size() > 0) {
-           return idList.get(0);
+        if (idList.size() > 0) {
+            return idList.get(0);
         } else {
-           return null;
+            return null;
         }
     }
 
