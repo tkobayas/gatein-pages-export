@@ -154,6 +154,9 @@ public class PagesExportUtil {
             container.setTitle(name);
         }
 
+        String id = getAttributeByAttrNameAndItemId("[http://www.gatein.org/jcr/mop/1.0/]id", itemId);
+        container.setId(id);
+
         String[] accessPermissions = getMultiplePropertyByPropNameAndItemId("[http://www.gatein.org/jcr/gatein/1.0/]access-permissions",
                 itemId);
         container.setAccessPermissions(accessPermissions);
