@@ -4,7 +4,7 @@
 
 	<groupId>org.example</groupId>
 	<artifactId>gatein-pages-export</artifactId>
-	<version>1.0.0</version>
+	<version>1.0.0-optimized</version>
 	<packaging>jar</packaging>
 	<name>gatein-pages-export</name>
 

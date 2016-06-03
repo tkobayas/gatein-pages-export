@@ -100,14 +100,17 @@ public class PagesExportUtil {
         String name = getSingleValueBySQL("select NAME from JCR_SITEM where ID = '" + pageId + "'");
         page.setName(name.replace("[http://www.gatein.org/jcr/mop/1.0/]", ""));
 
-        String title = getSinglePropertyByPropNameAndItemId("[http://www.gatein.org/jcr/gatein/1.0/]name", pageId);
+//        String title = getSinglePropertyByPropNameAndItemId("[http://www.gatein.org/jcr/gatein/1.0/]name", pageId);
+        String title = "dummy";
         page.setTitle(title);
 
-        String[] accessPermissions = getMultiplePropertyByPropNameAndItemId("[http://www.gatein.org/jcr/gatein/1.0/]access-permissions",
-                pageId);
+//        String[] accessPermissions = getMultiplePropertyByPropNameAndItemId("[http://www.gatein.org/jcr/gatein/1.0/]access-permissions",
+//                pageId);
+        String[] accessPermissions = new String[] {"dummy"};
         page.setAccessPermissions(accessPermissions);
 
-        String showMaxWindow = getAttributeByAttrNameAndItemId("[http://www.gatein.org/jcr/mop/1.0/]show-max-window", pageId);
+//        String showMaxWindow = getAttributeByAttrNameAndItemId("[http://www.gatein.org/jcr/mop/1.0/]show-max-window", pageId);
+        String showMaxWindow = "false";
         page.setShowMaxWindow(Boolean.valueOf(showMaxWindow));
 
         ArrayList<ModelObject> children = getChildren(pageId);
@@ -149,22 +152,26 @@ public class PagesExportUtil {
 
         Container container = new Container();
 
-        String name = getSinglePropertyByPropNameAndItemId("[http://www.gatein.org/jcr/gatein/1.0/]name", itemId);
+//        String name = getSinglePropertyByPropNameAndItemId("[http://www.gatein.org/jcr/gatein/1.0/]name", itemId);
+        String name = "dummy";
         if (name != null) {
             container.setTitle(name);
         }
 
-        String id = getAttributeByAttrNameAndItemId("[http://www.gatein.org/jcr/mop/1.0/]id", itemId);
+//        String id = getAttributeByAttrNameAndItemId("[http://www.gatein.org/jcr/mop/1.0/]id", itemId);
+        String id = "dummy";
         container.setId(id);
 
-        String[] accessPermissions = getMultiplePropertyByPropNameAndItemId("[http://www.gatein.org/jcr/gatein/1.0/]access-permissions",
-                itemId);
+//        String[] accessPermissions = getMultiplePropertyByPropNameAndItemId("[http://www.gatein.org/jcr/gatein/1.0/]access-permissions",
+//                itemId);
+        String[] accessPermissions = new String[] {"dummy"};
         container.setAccessPermissions(accessPermissions);
 
         String template = getAttributeByAttrNameAndItemId("[http://www.gatein.org/jcr/mop/1.0/]template", itemId);
         container.setTemplate(template);
 
-        String factoryId = getAttributeByAttrNameAndItemId("[http://www.gatein.org/jcr/mop/1.0/]factory-id", itemId);
+//        String factoryId = getAttributeByAttrNameAndItemId("[http://www.gatein.org/jcr/mop/1.0/]factory-id", itemId);
+        String factoryId = "dummy";
         container.setFactoryId(factoryId);
 
         ArrayList<ModelObject> children = new ArrayList<ModelObject>();
@@ -190,12 +197,14 @@ public class PagesExportUtil {
         //testQuery("select * from JCR_SITEM where PARENT_ID = '" + childId + "'");
         //testAttributes(childId);
 
-        String name = getSinglePropertyByPropNameAndItemId("[http://www.gatein.org/jcr/gatein/1.0/]name", itemId);
+//        String name = getSinglePropertyByPropNameAndItemId("[http://www.gatein.org/jcr/gatein/1.0/]name", itemId);
+        String name = "dummy";
         if (name != null) {
             portletApplication.setTitle(name);
         }
 
-        String description = getSinglePropertyByPropNameAndItemId("[http://www.gatein.org/jcr/gatein/1.0/]description", itemId);
+//        String description = getSinglePropertyByPropNameAndItemId("[http://www.gatein.org/jcr/gatein/1.0/]description", itemId);
+        String description = "dummy";
         if (description != null) {
             portletApplication.setDescription(description);
         }
@@ -214,26 +223,33 @@ public class PagesExportUtil {
             throw new RuntimeException("Unknown portlet : type = " + type + ", contentId = " + contentId);
         }
 
-        String[] accessPermissions = getMultiplePropertyByPropNameAndItemId("[http://www.gatein.org/jcr/gatein/1.0/]access-permissions",
-                itemId);
+//        String[] accessPermissions = getMultiplePropertyByPropNameAndItemId("[http://www.gatein.org/jcr/gatein/1.0/]access-permissions",
+//                itemId);
+        String[] accessPermissions = new String[] {"dummy"};
         portletApplication.setAccessPermissions(accessPermissions);
 
-        String theme = getAttributeByAttrNameAndItemId("[http://www.gatein.org/jcr/mop/1.0/]theme", itemId);
+//        String theme = getAttributeByAttrNameAndItemId("[http://www.gatein.org/jcr/mop/1.0/]theme", itemId);
+        String theme = "dummy";
         portletApplication.setTheme(theme);
 
-        String showInfoBar = getAttributeByAttrNameAndItemId("[http://www.gatein.org/jcr/mop/1.0/]showinfobar", itemId);
+//        String showInfoBar = getAttributeByAttrNameAndItemId("[http://www.gatein.org/jcr/mop/1.0/]showinfobar", itemId);
+        String showInfoBar = "false";
         portletApplication.setShowInfoBar(Boolean.valueOf(showInfoBar));
 
-        String showMode = getAttributeByAttrNameAndItemId("[http://www.gatein.org/jcr/mop/1.0/]showmode", itemId);
+//        String showMode = getAttributeByAttrNameAndItemId("[http://www.gatein.org/jcr/mop/1.0/]showmode", itemId);
+        String showMode = "false";
         portletApplication.setShowApplicationMode(Boolean.valueOf(showMode));
 
-        String showWindowState = getAttributeByAttrNameAndItemId("[http://www.gatein.org/jcr/mop/1.0/]showwindowstate", itemId);
+//        String showWindowState = getAttributeByAttrNameAndItemId("[http://www.gatein.org/jcr/mop/1.0/]showwindowstate", itemId);
+        String showWindowState = "false";
         portletApplication.setShowApplicationState(Boolean.valueOf(showWindowState));
 
-        String width = getAttributeByAttrNameAndItemId("[http://www.gatein.org/jcr/mop/1.0/]width", itemId);
+//        String width = getAttributeByAttrNameAndItemId("[http://www.gatein.org/jcr/mop/1.0/]width", itemId);
+        String width = "dummy";
         portletApplication.setWidth(width);
 
-        String height = getAttributeByAttrNameAndItemId("[http://www.gatein.org/jcr/mop/1.0/]height", itemId);
+//        String height = getAttributeByAttrNameAndItemId("[http://www.gatein.org/jcr/mop/1.0/]height", itemId);
+        String height = "dummy";
         portletApplication.setHeight(height);
 
         return portletApplication;
