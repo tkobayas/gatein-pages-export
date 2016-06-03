@@ -36,6 +36,10 @@ public class PagesExportUtil {
 
     public static void main(String[] args) throws Exception {
 
+        System.out.println("--------------------------------------------------");
+        System.out.println("---- Optimized version of gatein-pages-export ----");
+        System.out.println("--------------------------------------------------");
+
         Properties properties = new Properties();
         BufferedInputStream inputStream = new BufferedInputStream(new FileInputStream("gatein-pages-export.properties"));
         properties.load(inputStream);
@@ -153,14 +157,14 @@ public class PagesExportUtil {
         Container container = new Container();
 
 //        String name = getSinglePropertyByPropNameAndItemId("[http://www.gatein.org/jcr/gatein/1.0/]name", itemId);
-        String name = "dummy";
-        if (name != null) {
-            container.setTitle(name);
-        }
+//        String name = "dummy";
+//        if (name != null) {
+//            container.setTitle(name);
+//        }
 
 //        String id = getAttributeByAttrNameAndItemId("[http://www.gatein.org/jcr/mop/1.0/]id", itemId);
-        String id = "dummy";
-        container.setId(id);
+//        String id = "dummy";
+//        container.setId(id);
 
 //        String[] accessPermissions = getMultiplePropertyByPropNameAndItemId("[http://www.gatein.org/jcr/gatein/1.0/]access-permissions",
 //                itemId);
@@ -198,18 +202,19 @@ public class PagesExportUtil {
         //testAttributes(childId);
 
 //        String name = getSinglePropertyByPropNameAndItemId("[http://www.gatein.org/jcr/gatein/1.0/]name", itemId);
-        String name = "dummy";
-        if (name != null) {
-            portletApplication.setTitle(name);
-        }
+//        String name = "dummy";
+//        if (name != null) {
+//            portletApplication.setTitle(name);
+//        }
 
 //        String description = getSinglePropertyByPropNameAndItemId("[http://www.gatein.org/jcr/gatein/1.0/]description", itemId);
-        String description = "dummy";
-        if (description != null) {
-            portletApplication.setDescription(description);
-        }
+//        String description = "dummy";
+//        if (description != null) {
+//            portletApplication.setDescription(description);
+//        }
 
-        Portlet portlet = setupPortletPreferences(itemId);
+//        Portlet portlet = setupPortletPreferences(itemId);
+        Portlet portlet = new Portlet();
 
         String type = getAttributeByAttrNameAndItemId("[http://www.gatein.org/jcr/mop/1.0/]type", itemId);
         String contentId = getContentId(itemId);
@@ -229,8 +234,8 @@ public class PagesExportUtil {
         portletApplication.setAccessPermissions(accessPermissions);
 
 //        String theme = getAttributeByAttrNameAndItemId("[http://www.gatein.org/jcr/mop/1.0/]theme", itemId);
-        String theme = "dummy";
-        portletApplication.setTheme(theme);
+//        String theme = "dummy";
+//        portletApplication.setTheme(theme);
 
 //        String showInfoBar = getAttributeByAttrNameAndItemId("[http://www.gatein.org/jcr/mop/1.0/]showinfobar", itemId);
         String showInfoBar = "false";
@@ -245,12 +250,12 @@ public class PagesExportUtil {
         portletApplication.setShowApplicationState(Boolean.valueOf(showWindowState));
 
 //        String width = getAttributeByAttrNameAndItemId("[http://www.gatein.org/jcr/mop/1.0/]width", itemId);
-        String width = "dummy";
-        portletApplication.setWidth(width);
+//        String width = "dummy";
+//        portletApplication.setWidth(width);
 
 //        String height = getAttributeByAttrNameAndItemId("[http://www.gatein.org/jcr/mop/1.0/]height", itemId);
-        String height = "dummy";
-        portletApplication.setHeight(height);
+//        String height = "dummy";
+//        portletApplication.setHeight(height);
 
         return portletApplication;
     }
