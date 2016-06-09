@@ -89,7 +89,8 @@ public class PagesExportUtil {
 
         System.out.println();
         System.out.println("=================================");
-        System.out.println("verifying file existence...");
+        System.out.println("a list of users who miss xml files");
+        System.out.println();
 
         // verify file existence
         BufferedReader reader2 = new BufferedReader(new FileReader(USER_LIST_FILE));
@@ -102,11 +103,12 @@ public class PagesExportUtil {
             if (file.exists()) {
                 //System.out.println(user + ".xml exists");
             } else {
-                System.out.println(user + ".xml doesn't exist");
+                System.out.println(user);
             }
         }
         reader2.close();
 
+        System.out.println();
         System.out.println("finish");
     }
 
