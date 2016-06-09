@@ -3,6 +3,7 @@ package com.example;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
@@ -34,6 +35,8 @@ public class PagesExportUtil {
 
     public static Connection conn;
 
+    public static final String USER_LIST_FILE = "user-list.txt";
+
     public static void main(String[] args) throws Exception {
 
         Properties properties = new Properties();
@@ -45,7 +48,7 @@ public class PagesExportUtil {
         conn = DriverManager.getConnection(properties.getProperty("connectionUrl"), properties.getProperty("username"),
                 properties.getProperty("password"));
 
-        BufferedReader reader = new BufferedReader(new FileReader("user-list.txt"));
+        BufferedReader reader = new BufferedReader(new FileReader(USER_LIST_FILE));
         while (reader.ready()) {
 
             try {
@@ -83,6 +86,28 @@ public class PagesExportUtil {
         }
 
         reader.close();
+
+        System.out.println();
+        System.out.println("=================================");
+        System.out.println("verifying file existence...");
+
+        // verify file existence
+        BufferedReader reader2 = new BufferedReader(new FileReader(USER_LIST_FILE));
+        while (reader2.ready()) {
+            String user = reader2.readLine();
+            if (user == null || user.trim().isEmpty()) {
+                continue;
+            }
+            File file = new File("output/" + user + ".xml");
+            if (file.exists()) {
+                //System.out.println(user + ".xml exists");
+            } else {
+                System.out.println(user + ".xml doesn't exist");
+            }
+        }
+        reader2.close();
+
+        System.out.println("finish");
     }
 
     private static void exportPages(List<Page> pageList, OutputStream outputStream) {
